@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的積木乘法夥伴 (手繪底圖版)</title>
+    <title>我的積木乘法夥伴</title>
     <style>
         :root {
             --ink-color: #2c3e50;
@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #eee; /* 最外層背景，如果圖片沒載入會看到這個 */
+            background-color: #eee; 
             margin: 0;
             display: flex;
             justify-content: center;
@@ -29,37 +29,29 @@
             pointer-events: none; z-index: 9999;
         }
 
-        /* --- 核心容器：設定背景圖片 --- */
         .paper-container {
-            /* 這裡讀取您的圖片 bg.png */
+            /* 這裡已經設定好讀取正確的 bg.png */
             background-image: url('bg.png'); 
-            background-size: contain; /* 讓圖片完整顯示 */
+            background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            
             width: 95%;
             max-width: 800px;
-            /* 設定一個合適的高度比例，讓它看起來像原圖 */
             aspect-ratio: 3 / 4; 
             max-height: 90vh;
-            
             position: relative;
             z-index: 10;
-            /* 移除原本的邊框和背景色，因為底圖都有了 */
             background-color: transparent;
             border: none;
             box-shadow: none;
-
             display: flex;
             flex-direction: column;
         }
 
-        /* --- 繪圖區域佈局調整 --- */
         .drawing-area {
             flex: 1;
             display: flex;
             padding: 20px;
-            /* 這裡需要一點魔法數字來對齊底圖的位置 */
             padding-top: 18%; 
             padding-left: 8%;
             padding-right: 8%;
@@ -71,12 +63,11 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            padding-top: 5%; /* 對齊手繪按鈕位置 */
+            padding-top: 5%;
         }
 
         .center-panel {
             flex: 2;
-            /* 移除原本的邊框和背景 */
             border: none;
             background: transparent;
             padding: 5% 8%;
@@ -91,10 +82,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 8%; /* 對齊對話框 */
+            padding-top: 8%;
         }
 
-        /* --- 元素樣式 --- */
         .question-title {
             font-size: 2rem;
             font-weight: bold;
@@ -103,13 +93,11 @@
         }
 
         .block-container {
-            /* 移除虛線框，底圖有了 */
             border: none; 
             padding: 5px;
             margin: 5px 0;
         }
         .block-grid { display: grid; gap: 3px; }
-        /* 積木顏色改為配合底圖的紅藍配色 */
         .block-cell {
             width: 18px; height: 18px;
             border: 2px solid var(--ink-color);
@@ -130,7 +118,6 @@
         }
 
         .hand-drawn-btn {
-            /* 按鈕保留白色背景，比較清楚 */
             background: white;
             border: var(--btn-border);
             border-radius: 8px;
@@ -143,25 +130,21 @@
         }
         .hand-drawn-btn:active { transform: translate(2px, 2px); box-shadow: none; }
 
-        /* 對話框文字容器 (移除原本的白色氣泡背景) */
         .speech-text-container {
             width: 70%;
             text-align: center;
             font-weight: bold;
             font-size: 1rem;
             color: var(--ink-color);
-            /* 為了讓文字在藍色氣泡上清楚，加一點白色背景微調 */
             background: rgba(255,255,255,0.7);
             padding: 5px;
             border-radius: 10px;
-            transform: rotate(-5deg); /* 配合底圖氣泡角度 */
+            transform: rotate(-5deg);
         }
         
-        /* 移除 SVG 小女孩，因為底圖有了 */
         .character-img { display: none; }
 
         .numpad-area {
-            /* 讓鍵盤區半透明，融入背景 */
             background: rgba(238, 238, 238, 0.8);
             padding: 10px;
             border-top: 3px solid var(--ink-color);
@@ -178,14 +161,31 @@
         }
         .num-btn:active { transform: translate(2px, 2px); box-shadow: none; }
 
-        #overlay-screen {
+        /* --- 遮罩與排行榜樣式 --- */
+        .overlay-screen {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(44, 62, 80, 0.95);
             z-index: 1000; display: flex;
             flex-direction: column; justify-content: center;
             align-items: center; color: white; text-align: center;
-            border-radius: 15px; /* 配合容器圓角 */
+            border-radius: 15px;
+            padding: 20px;
         }
+
+        #name-input {
+            font-size: 1.5rem; padding: 10px; border-radius: 10px; border: none;
+            margin: 15px 0; text-align: center; width: 80%;
+        }
+
+        #leaderboard-list {
+            list-style: none; padding: 0; width: 100%; max-height: 200px; overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        #leaderboard-list li {
+            background: rgba(255,255,255,0.1); margin: 5px 0; padding: 10px;
+            border-radius: 5px; display: flex; justify-content: space-between; font-size: 1.2rem;
+        }
+        .score-badge { font-weight: bold; color: #f1c40f; }
     </style>
 </head>
 <body>
@@ -193,31 +193,51 @@
 <canvas id="fireworks-canvas"></canvas>
 
 <div class="paper-container">
-    <div id="overlay-screen">
-        <h1 id="overlay-title">準備好了嗎？</h1>
-        <p>記得把 `bg.png` 放在旁邊喔！</p>
+    <div id="start-screen" class="overlay-screen">
+        <h1 style="margin: 10px 0;">我是乘法高手</h1>
+        <p>輸入名字，跟朋友比比看！</p>
+        <input type="text" id="name-input" placeholder="你的暱稱 (例如: 小美)">
         <br>
-        <button class="hand-drawn-btn" style="padding: 10px 30px;" onclick="startGame()">開始練習</button>
+        <button class="hand-drawn-btn" style="padding: 10px 30px;" onclick="startGame()">開始挑戰</button>
+        <br>
+        <button class="hand-drawn-btn" style="background:#3498db; color:white; margin-top:10px;" onclick="showLeaderboard()">查看排行榜</button>
     </div>
+
+    <div id="leaderboard-screen" class="overlay-screen" style="display: none;">
+        <h2 style="color:#f1c40f;">🏆 前 10 名排行榜 🏆</h2>
+        <ul id="leaderboard-list">
+            <li>載入中...</li>
+        </ul>
+        <button class="hand-drawn-btn" onclick="closeLeaderboard()">關閉</button>
+    </div>
+
+    <div id="end-screen" class="overlay-screen" style="display: none;">
+        <h1 id="final-score-title">挑戰結束！</h1>
+        <p id="final-score-text">你的分數：0 分</p>
+        <button id="submit-btn" class="hand-drawn-btn" style="background:#2ecc71; color:white;" onclick="submitScore()">送出分數到排行榜</button>
+        <br><br>
+        <button class="hand-drawn-btn" onclick="location.reload()">再玩一次</button>
+    </div>
+
 
     <div class="drawing-area">
         <div class="left-panel">
             <button class="hand-drawn-btn" style="background:#f1c40f; color:#2c3e50;" onclick="dontKnow()">[不知道]</button>
-            <button class="hand-drawn-btn" style="background:#e74c3c; color:white;" onclick="quitGame()">不想<br>玩了</button>
+            <button class="hand-drawn-btn" style="background:#e74c3c; color:white;" onclick="endGame()">結束<br>結算</button>
         </div>
 
         <div class="center-panel">
-            <div class="question-title" id="q-title">3 × 3 = ?</div>
+            <div class="question-title" id="q-title">準備中...</div>
             <div class="block-container">
                  <div class="block-grid" id="block-grid"></div>
             </div>
             <div class="equation-display">
-                <span id="eq-part1">3 × 3 = </span>( <span class="input-slot" id="player-input"></span> )
+                <span id="eq-part1">...</span>( <span class="input-slot" id="player-input"></span> )
             </div>
         </div>
 
         <div class="right-panel">
-            <div class="speech-text-container" id="speech-text">快點說答案～</div>
+            <div class="speech-text-container" id="speech-text">準備好了嗎？</div>
         </div>
     </div>
 
@@ -239,11 +259,17 @@
 </div>
 
 <script>
-    // --- 遊戲變數 ---
+    // =================================================================
+    // 【超級重要】請把您的 Google Script 網址貼在下面這行引號裡！
+    // =================================================================
+    const GOOGLE_SCRIPT_URL = "您的_GOOGLE_SCRIPT_網址_貼在這裡";
+    // =================================================================
+
     let currentNum1 = 0; let currentNum2 = 0; let correctAnswer = 0; let isGameActive = false;
+    let playerName = "";
+    let totalScore = 0;
     const speechBubble = document.getElementById('speech-text');
 
-    // --- 音效系統 ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -257,8 +283,6 @@
             const osc = audioCtx.createOscillator(); osc.frequency.setValueAtTime(800, now); osc.connect(gainNode); osc.start(now); osc.stop(now + 0.05); gainNode.gain.setValueAtTime(0.05, now); gainNode.gain.linearRampToValueAtTime(0, now + 0.05);
         }
     }
-
-    // --- 煙火系統 ---
     const canvas = document.getElementById('fireworks-canvas'); const ctx = canvas.getContext('2d'); let particles = [];
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvas); resizeCanvas();
@@ -273,15 +297,26 @@
     }
     animateFireworks();
 
-    // --- 遊戲邏輯 ---
     function startGame() {
-        document.getElementById('overlay-screen').style.display = 'none'; isGameActive = true;
+        const nameInput = document.getElementById('name-input');
+        playerName = nameInput.value.trim();
+        if (playerName === "") {
+            alert("請先輸入你的名字或暱稱喔！");
+            return;
+        }
+        document.getElementById('start-screen').style.display = 'none';
+        isGameActive = true; totalScore = 0;
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        speechBubble.innerText = "快點說答案～"; generateProblem();
+        speechBubble.innerText = `${playerName}，加油！`; 
+        generateProblem();
     }
-    function quitGame() {
-        isGameActive = false; document.getElementById('overlay-title').innerHTML = "下次再來玩！<br>拜拜！"; document.getElementById('overlay-screen').style.display = 'flex';
+
+    function endGame() {
+        isGameActive = false;
+        document.getElementById('final-score-text').innerText = `${playerName} 的總分是：${totalScore} 分`;
+        document.getElementById('end-screen').style.display = 'flex';
     }
+
     function dontKnow() {
         if (!isGameActive) return; playSound('click');
         document.getElementById('player-input').innerText = '';
@@ -300,21 +335,89 @@
         for (let i = 0; i < rows * cols; i++) {
             const cell = document.createElement('div'); cell.className = 'block-cell';
             cell.style.width = blockSize + 'px'; cell.style.height = blockSize + 'px';
-            // 隨機分配紅藍色積木，配合底圖
             cell.style.backgroundColor = Math.random() > 0.5 ? '#e74c3c' : '#3498db';
             grid.appendChild(cell);
         }
     }
     function addNum(num) { if (!isGameActive) return; playSound('click'); const inputDiv = document.getElementById('player-input'); if (inputDiv.innerText.length < 3) inputDiv.innerText += num; }
+    
     function checkAnswer() {
         if (!isGameActive) return; const inputDiv = document.getElementById('player-input'); const playerVal = parseInt(inputDiv.innerText);
         if (isNaN(playerVal) || inputDiv.innerText === '') { speechBubble.innerText = "你還沒輸入答案喔！"; return; }
         if (playerVal === correctAnswer) {
             playSound('correct'); createFirework(window.innerWidth / 2, window.innerHeight / 2); setTimeout(() => createFirework(window.innerWidth / 3, window.innerHeight / 2 - 50), 200); setTimeout(() => createFirework(window.innerWidth * 2 / 3, window.innerHeight / 2 - 50), 400);
-            speechBubble.innerText = "哇！太厲害了！"; inputDiv.style.color = "#2ecc71";
-            setTimeout(() => { speechBubble.innerText = "下一題是什麼呢？"; generateProblem(); }, 1800);
+            
+            totalScore += 10;
+            speechBubble.innerText = `答對了！目前 ${totalScore} 分`;
+            inputDiv.style.color = "#2ecc71";
+            setTimeout(() => { speechBubble.innerText = "下一題！"; generateProblem(); }, 1800);
         } else {
             playSound('wrong'); speechBubble.innerText = "哎呀，再數數看？"; document.getElementById('player-input').innerText = '';
+        }
+    }
+
+    function submitScore() {
+        if (GOOGLE_SCRIPT_URL === "您的_GOOGLE_SCRIPT_網址_貼在這裡" || GOOGLE_SCRIPT_URL === "") {
+            alert("請先設定 Google Script 網址！"); return;
+        }
+        const btn = document.getElementById('submit-btn');
+        btn.innerText = "送出中..."; btn.disabled = true;
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ name: playerName, score: totalScore })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.result === "success") {
+                alert("分數送出成功！來看看排行榜吧！");
+                document.getElementById('end-screen').style.display = 'none';
+                showLeaderboard();
+            } else {
+                alert("送出失敗，請稍後再試。"); btn.innerText = "送出分數到排行榜"; btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("發生錯誤，無法連線到排行榜伺服器。");
+             btn.innerText = "送出分數到排行榜"; btn.disabled = false;
+        });
+    }
+
+    function showLeaderboard() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('leaderboard-screen').style.display = 'flex';
+        const list = document.getElementById('leaderboard-list');
+        list.innerHTML = '<li>正在讀取最新排名...</li>';
+
+        if (GOOGLE_SCRIPT_URL === "您的_GOOGLE_SCRIPT_網址_貼在這裡" || GOOGLE_SCRIPT_URL === "") {
+            list.innerHTML = '<li>尚未設定排行榜連結。</li>'; return;
+        }
+
+        fetch(GOOGLE_SCRIPT_URL)
+        .then(response => response.json())
+        .then(data => {
+            list.innerHTML = '';
+            if (data.length === 0) {
+                list.innerHTML = '<li>目前還沒有人上榜喔，快來當第一名！</li>';
+            } else {
+                data.forEach((row, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span>${index + 1}. ${row[0]}</span> <span class="score-badge">${row[1]} 分</span>`;
+                    list.appendChild(li);
+                });
+            }
+        })
+        .catch(error => {
+             console.error('Error:', error);
+             list.innerHTML = '<li>讀取失敗，請檢查網路連線。</li>';
+        });
+    }
+
+    function closeLeaderboard() {
+        document.getElementById('leaderboard-screen').style.display = 'none';
+        if (playerName === "") {
+             document.getElementById('start-screen').style.display = 'flex';
         }
     }
 </script>
