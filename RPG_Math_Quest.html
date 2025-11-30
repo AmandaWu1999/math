@@ -14,8 +14,8 @@
         }
 
         body {
-            /* 使用您提供的圖片作為背景 */
-            background-image: url('image_0.png'); /* 假設您下載的圖片命名為 image_0.png */
+            /* 重要：這裡的圖片檔名要跟您 GitHub 上傳的一致，建議改回 image_0.png */
+            background-image: url('image_0.png'); 
             background-size: cover;
             background-position: center center;
             background-attachment: fixed;
@@ -213,6 +213,8 @@
     <audio id="sfx-correct" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
     <audio id="sfx-wrong" src="https://assets.mixkit.co/active_storage/sfx/2926/2926-preview.mp3"></audio>
     <audio id="sfx-victory" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+    
+    <audio id="bgm-epic" src="https://cdn.pixabay.com/audio/2023/10/24/audio_6904361690.mp3" loop preload="auto"></audio>
 
 
     <div id="setup-screen" class="rpg-container">
@@ -248,7 +250,7 @@
             </div>
         </div>
 
-        <button class="btn-epic" onclick="startGame()">開始冒險！</button>
+        <button class="btn-epic" onclick="startGame()">開始冒險！(播放音樂)</button>
     </div>
 
 
@@ -297,11 +299,18 @@
         let score = 0;
         let totalQuestions = 0;
         let heroName = "無名勇者";
+        
+        // 音效元素
         const sfxCorrect = document.getElementById('sfx-correct');
         const sfxWrong = document.getElementById('sfx-wrong');
         const sfxVictory = document.getElementById('sfx-victory');
+        const bgmEpic = document.getElementById('bgm-epic'); // 【新增】BGM
+
         const fireworksCanvas = document.getElementById('fireworks-canvas');
         const ctx = fireworksCanvas.getContext('2d');
+
+        // 設定 BGM 音量 (0.0 ~ 1.0)，稍微小聲一點避免蓋過音效
+        bgmEpic.volume = 0.4;
 
         // 綁定 Enter 鍵提交答案
         document.getElementById('answer-input').addEventListener('keypress', function(event) {
@@ -313,6 +322,12 @@
         // --- 遊戲核心邏輯 ---
 
         function startGame() {
+            // 【新增】開始播放背景音樂 (瀏覽器規定必須在使用者點擊後才能播放)
+            bgmEpic.currentTime = 0; // 從頭開始
+            bgmEpic.play().catch(error => {
+                console.log("背景音樂自動播放被瀏覽器阻擋，這在某些設定下是正常的。");
+            });
+
             const nameInput = document.getElementById('hero-name').value.trim();
             if (nameInput) heroName = nameInput;
 
@@ -393,7 +408,6 @@
                 sfxWrong.play();
                 gameContainer.classList.add('shake');
                 setTimeout(() => gameContainer.classList.remove('shake'), 500);
-                // 可以選擇是否要提示正確答案，這裡暫不提示，保持節奏
             }
 
             currentQuestionIndex++;
@@ -409,6 +423,10 @@
         }
 
         function endGame() {
+            // 【新增】遊戲結束，停止背景音樂
+            bgmEpic.pause();
+            bgmEpic.currentTime = 0;
+
             document.getElementById('game-screen').style.display = 'none';
             document.getElementById('result-screen').style.display = 'block';
 
@@ -432,6 +450,10 @@
         }
 
         function resetGame() {
+            // 【新增】確保重置時音樂也是停止的
+            bgmEpic.pause();
+            bgmEpic.currentTime = 0;
+
             document.getElementById('result-screen').style.display = 'none';
             document.getElementById('setup-screen').style.display = 'block';
             document.getElementById('hero-name').value = '';
