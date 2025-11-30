@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勇者鬥惡龍：99乘法試煉</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --main-gold: #d4af37;
+            --dark-bg: rgba(20, 20, 30, 0.85);
+            --accent-red: #c0392b;
+            --text-light: #f0f0f0;
+        }
+
+        body {
+            /* 使用您提供的圖片作為背景 */
+            background-image: url('image_0.png'); /* 假設您下載的圖片命名為 image_0.png */
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-color: #1a1a1a; /* 備用背景色 */
+            font-family: 'Noto Sans TC', sans-serif;
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* RPG 風格容器通用設定 */
+        .rpg-container {
+            background-color: var(--dark-bg);
+            border: 4px solid var(--main-gold);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(0,0,0,0.8);
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        h1, h2 {
+            color: var(--main-gold);
+            text-shadow: 2px 2px 4px #000;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        /* --- 設定畫面 (Lobby) --- */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--main-gold);
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 2px solid #555;
+            border-radius: 5px;
+            color: var(--text-light);
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus, select:focus {
+            border-color: var(--main-gold);
+            outline: none;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-start;
+        }
+
+        .radio-group label {
+            margin: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+        }
+        .radio-group input { margin-right: 8px; }
+
+
+        /* --- 遊戲按鈕 --- */
+        .btn-epic {
+            background: linear-gradient(to bottom, #e6c34d, #b38f1d);
+            border: 3px solid #fff;
+            color: #2c1e1e;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px #6b5412, 0 0 15px var(--main-gold);
+            transition: all 0.2s;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.4);
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .btn-epic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px #6b5412, 0 0 25px var(--main-gold);
+        }
+
+        .btn-epic:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px #6b5412;
+        }
+
+        /* --- 戰鬥畫面 (Battle Screen) --- */
+        #game-screen { display: none; }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #bbb;
+        }
+        .status-gold { color: var(--main-gold); }
+
+        .question-box {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 30px 0;
+            color: #fff;
+            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 5px 5px 10px rgba(0,0,0,0.5);
+        }
+
+        #answer-input {
+            font-size: 2em;
+            text-align: center;
+            width: 150px;
+        }
+
+        /* 答對答錯的視覺效果 */
+        .shake { animation: shake 0.5s; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .flash-green { animation: flashGreen 0.5s; }
+        @keyframes flashGreen {
+            0%, 100% { background-color: var(--dark-bg); }
+            50% { background-color: rgba(46, 204, 113, 0.5); }
+        }
+
+        /* --- 結算畫面 (Result Screen) --- */
+        #result-screen { display: none; z-index: 10; }
+        .hero-name-display { font-size: 1.5em; color: var(--main-gold); }
+        .final-score {
+            font-size: 5em;
+            color: var(--accent-red);
+            text-shadow: 2px 2px 0 #fff, 4px 4px 0 #000;
+            margin: 20px 0;
+        }
+        .leaderboard {
+            margin-top: 30px;
+            text-align: left;
+            border-top: 2px solid #555;
+            padding-top: 20px;
+        }
+        .leaderboard h3 { color: var(--main-gold); text-align: center; }
+        .leaderboard ul { list-style: none; padding: 0; }
+        .leaderboard li {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+        }
+        .rank-1 { color: #FFD700; } /* Gold */
+        .rank-2 { color: #C0C0C0; } /* Silver */
+        .rank-3 { color: #CD7F32; } /* Bronze */
+
+        /* --- 煙火 Canvas --- */
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 讓滑鼠可以穿透點擊下方的按鈕 */
+            z-index: 5;
+        }
+
+    </style>
+</head>
+<body>
+
+    <audio id="sfx-correct" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
+    <audio id="sfx-wrong" src="https://assets.mixkit.co/active_storage/sfx/2926/2926-preview.mp3"></audio>
+    <audio id="sfx-victory" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
+
+    <div id="setup-screen" class="rpg-container">
+        <h1>⚔️ 勇者試煉：乘法之章 ⚔️</h1>
+        <p>準備好面對數字惡龍的挑戰了嗎？設定你的冒險！</p>
+
+        <div class="form-group">
+            <label for="hero-name">勇者姓名：</label>
+            <input type="text" id="hero-name" placeholder="請輸入你的名字...">
+        </div>
+
+        <div class="form-group">
+            <label for="number-select">選擇挑戰目標 (乘數)：</label>
+            <select id="number-select">
+                <option value="2">挑戰 2 的乘法</option>
+                <option value="3">挑戰 3 的乘法</option>
+                <option value="4">挑戰 4 的乘法</option>
+                <option value="5">挑戰 5 的乘法</option>
+                <option value="6">挑戰 6 的乘法</option>
+                <option value="7">挑戰 7 的乘法</option>
+                <option value="8">挑戰 8 的乘法</option>
+                <option value="9">挑戰 9 的乘法</option>
+                <option value="all" selected>🔥 挑戰全部 (終極試煉)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>惡龍出現順序：</label>
+            <div class="radio-group">
+                <label><input type="radio" name="order" value="seq" checked> 循序漸進</label>
+                <label><input type="radio" name="order" value="rev"> 逆向挑戰</label>
+                <label><input type="radio" name="order" value="rand"> 隨機突襲</label>
+            </div>
+        </div>
+
+        <button class="btn-epic" onclick="startGame()">開始冒險！</button>
+    </div>
+
+
+    <div id="game-screen" class="rpg-container">
+        <div class="status-bar">
+            <div>關卡: <span id="progress-display" class="status-gold">1 / 10</span></div>
+            <div>得分: <span id="score-display" class="status-gold">0</span></div>
+        </div>
+        
+        <div id="question-box" class="question-box">
+            7 x 8 = ?
+        </div>
+
+        <div>
+            <input type="text" id="answer-input" placeholder="答案是..." autocomplete="off">
+        </div>
+        
+        <button class="btn-epic" style="margin-top: 30px;" onclick="checkAnswer()">發動攻擊！(Enter)</button>
+    </div>
+
+
+    <div id="result-screen" class="rpg-container">
+        <h1>🏆 試煉完成！🏆</h1>
+        <p>勇者 <span id="final-hero-name" class="hero-name-display"></span> 的最終戰績：</p>
+        <div class="final-score" id="final-score-display">
+            100 分
+        </div>
+        <p id="result-comment">完美的勝利！惡龍已被你擊倒！</p>
+        
+        <button class="btn-epic" onclick="resetGame()">再次挑戰</button>
+
+        <div class="leaderboard">
+            <h3>📜 英雄榜 (本機紀錄) 📜</h3>
+            <ul id="leaderboard-list">
+                </ul>
+        </div>
+    </div>
+
+    <canvas id="fireworks-canvas"></canvas>
+
+
+    <script>
+        // --- 全域變數 ---
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let totalQuestions = 0;
+        let heroName = "無名勇者";
+        const sfxCorrect = document.getElementById('sfx-correct');
+        const sfxWrong = document.getElementById('sfx-wrong');
+        const sfxVictory = document.getElementById('sfx-victory');
+        const fireworksCanvas = document.getElementById('fireworks-canvas');
+        const ctx = fireworksCanvas.getContext('2d');
+
+        // 綁定 Enter 鍵提交答案
+        document.getElementById('answer-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // --- 遊戲核心邏輯 ---
+
+        function startGame() {
+            const nameInput = document.getElementById('hero-name').value.trim();
+            if (nameInput) heroName = nameInput;
+
+            const selectedNum = document.getElementById('number-select').value;
+            const selectedOrder = document.querySelector('input[name="order"]:checked').value;
+
+            // 1. 產生題庫
+            currentQuestions = generateQuestions(selectedNum, selectedOrder);
+            totalQuestions = currentQuestions.length;
+            currentQuestionIndex = 0;
+            score = 0;
+
+            // 2. 更新介面並切換螢幕
+            updateStatus();
+            showQuestion();
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('answer-input').focus();
+        }
+
+        function generateQuestions(numType, orderType) {
+            let questions = [];
+            let multipliers = [2, 3, 4, 5, 6, 7, 8, 9];
+            let multiplicands = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+            if (numType !== 'all') {
+                multipliers = [parseInt(numType)];
+            }
+
+            for (let m1 of multipliers) {
+                for (let m2 of multiplicands) {
+                    questions.push({ q: `${m1} x ${m2}`, a: m1 * m2 });
+                }
+            }
+
+            // 根據選擇重新排序
+            if (orderType === 'rev') {
+                questions.reverse();
+            } else if (orderType === 'rand') {
+                shuffleArray(questions);
+            }
+            
+            // 如果是選全部，題目太多，限制最多出 20 題，避免太累
+            if (numType === 'all' && orderType === 'rand') {
+                 questions = questions.slice(0, 20);
+            }
+
+            return questions;
+        }
+
+        function showQuestion() {
+            if (currentQuestionIndex >= totalQuestions) {
+                endGame();
+                return;
+            }
+            const q = currentQuestions[currentQuestionIndex];
+            document.getElementById('question-box').innerText = `${q.q} = ?`;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+
+        function checkAnswer() {
+            const input = document.getElementById('answer-input');
+            const userAnswer = parseInt(input.value);
+            const correctAnswer = currentQuestions[currentQuestionIndex].a;
+            const gameContainer = document.getElementById('game-screen');
+
+            if (userAnswer === correctAnswer) {
+                // 答對
+                score += 10;
+                sfxCorrect.currentTime = 0;
+                sfxCorrect.play();
+                gameContainer.classList.add('flash-green');
+                setTimeout(() => gameContainer.classList.remove('flash-green'), 500);
+            } else {
+                // 答錯
+                sfxWrong.currentTime = 0;
+                sfxWrong.play();
+                gameContainer.classList.add('shake');
+                setTimeout(() => gameContainer.classList.remove('shake'), 500);
+                // 可以選擇是否要提示正確答案，這裡暫不提示，保持節奏
+            }
+
+            currentQuestionIndex++;
+            updateStatus();
+            
+            // 稍微延遲後顯示下一題，讓玩家看到回饋
+            setTimeout(showQuestion, 600);
+        }
+
+        function updateStatus() {
+            document.getElementById('progress-display').innerText = `${currentQuestionIndex + 1} / ${totalQuestions}`;
+            document.getElementById('score-display').innerText = score;
+        }
+
+        function endGame() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+
+            document.getElementById('final-hero-name').innerText = heroName;
+            document.getElementById('final-score-display').innerText = `${score} 分`;
+
+            let comment = "";
+            if (score === totalQuestions * 10) {
+                comment = "傳說級的表現！完美的勝利！惡龍已被你徹底擊倒！";
+                sfxVictory.play();
+                startFireworks(); // 滿分放煙火
+            } else if (score >= totalQuestions * 8) {
+                comment = "太棒了！你英勇地擊退了大部分的敵人！";
+                startFireworks(); // 高分放煙火
+            } else {
+                comment = "戰鬥結束了，勇者。雖然有些挫折，但下次你一定會更強！";
+            }
+            document.getElementById('result-comment').innerText = comment;
+
+            updateLeaderboard(heroName, score);
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('setup-screen').style.display = 'block';
+            document.getElementById('hero-name').value = '';
+            stopFireworks();
+        }
+
+        // --- 工具函數：陣列洗牌 (Fisher-Yates Shuffle) ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- 排行榜系統 (使用 LocalStorage) ---
+        function updateLeaderboard(name, newScore) {
+            let leaderboard = JSON.parse(localStorage.getItem('mathQuestLeaderboard')) || [];
+            
+            // 新增紀錄
+            leaderboard.push({ name: name, score: newScore, date: new Date().toLocaleDateString() });
+            
+            // 排序 (分數高到低)
+            leaderboard.sort((a, b) => b.score - a.score);
+            
+            // 只保留前 5 名
+            leaderboard = leaderboard.slice(0, 5);
+            
+            // 存回 LocalStorage
+            localStorage.setItem('mathQuestLeaderboard', JSON.stringify(leaderboard));
+            
+            // 更新畫面顯示
+            renderLeaderboard(leaderboard);
+        }
+
+        function renderLeaderboard(leaderboard) {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+            if (leaderboard.length === 0) {
+                list.innerHTML = '<li>暫無紀錄，快來創造傳說！</li>';
+                return;
+            }
+            leaderboard.forEach((entry, index) => {
+                const li = document.createElement('li');
+                let rankClass = '';
+                if (index === 0) rankClass = 'rank-1';
+                else if (index === 1) rankClass = 'rank-2';
+                else if (index === 2) rankClass = 'rank-3';
+                
+                li.innerHTML = `
+                    <span class="${rankClass}">No.${index + 1} ${entry.name}</span>
+                    <span class="${rankClass}">${entry.score} 分</span>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // 頁面載入時先渲染一次排行榜
+        renderLeaderboard(JSON.parse(localStorage.getItem('mathQuestLeaderboard')) || []);
+
+
+        // --- 簡易煙火系統 (Canvas) ---
+        let particles = [];
+        let fireworksActive = false;
+
+        function resizeCanvas() {
+            fireworksCanvas.width = window.innerWidth;
+            fireworksCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 8,
+                    y: (Math.random() - 0.5) * 8
+                };
+                this.alpha = 1;
+                this.friction = 0.95;
+                this.gravity = 0.05;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+            update() {
+                this.velocity.x *= this.friction;
+                this.velocity.y *= this.friction;
+                this.velocity.y += this.gravity;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.01;
+            }
+        }
+
+        function createFirework(x, y) {
+            const colors = ['#ff0000', '#ffd700', '#00ff00', '#00ffff', '#ff00ff'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            for (let i = 0; i < 50; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function animateFireworks() {
+            if (!fireworksActive) return;
+            requestAnimationFrame(animateFireworks);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; // 拖影效果
+            ctx.fillRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+            particles.forEach((particle, i) => {
+                if (particle.alpha > 0) {
+                    particle.update();
+                    particle.draw();
+                } else {
+                    particles.splice(i, 1);
+                }
+            });
+            // 隨機產生新的煙火
+            if (Math.random() < 0.05) {
+                createFirework(Math.random() * fireworksCanvas.width, Math.random() * fireworksCanvas.height / 2);
+            }
+        }
+
+        function startFireworks() {
+            fireworksActive = true;
+            animateFireworks();
+        }
+
+        function stopFireworks() {
+            fireworksActive = false;
+            ctx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+            particles = [];
+        }
+
+    </script>
+</body>
+</html>
